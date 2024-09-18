@@ -1,10 +1,14 @@
 import numpy as np
-import panda as pd
+import pandas as pd
 import random
 import pennylane as qml
 import time
 import matplotlib as plt
 from pennylane import AngleEmbedding
+from sklearn import preprocessing
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
 
 train_size = 10 # Specify the size of the training set.
 
