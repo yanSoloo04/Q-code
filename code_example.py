@@ -9,6 +9,7 @@ from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
+import os
 
 train_size = 10 # Specify the size of the training set.
 
@@ -27,6 +28,7 @@ for i in range(0,N_readings):
     seed = np.random.randint(0,100)
 
     # Read data from dataset:
+    
 
     read = pd.read_csv("HTRU_2.csv")
 

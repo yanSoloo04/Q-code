@@ -1,22 +1,61 @@
 import numpy as np
 import pennylane as qml
+from pennylane import AngleEmbedding
 from numpy.typing import NDArray
+from typing import Callable
+import matplotlib.pyplot as plt
 
 
-def embedding_circuit(params : NDArray):
-    for i, parameter in enumerate(params):
-        qml.RY(phi = parameter, wires = i)
-    
+
+device = qml.device("default.qubit")
+@qml.qnode(device)
+def kernel(x: NDArray, y: NDArray, embedding: Callable):
+    assert(len(x) == len(y))
+    nb_qubits = len(x)
+    projector = np.zeros((2**nb_qubits, 2**nb_qubits))
+    projector[0, 0]=1
+
+    embedding(features = x, wires = range(nb_qubits))
+    qml.adjoint(embedding(features = y, wires = range(nb_qubits)))
+    return qml.expval(qml.Hermitian(projector, wires = range(nb_qubits)))
 
 
-X=np.array([1, 2, 3, 4, 5, 6, 7, 8])
-Y=np.array([1, 3, 2, 4, 5, 6, 7, 8])
 
-dev = qml.device("default.qubit", wires=8)
-@qml.qnode(dev)
-def QSVM_circuit(X, Y):
-    embedding_circuit(X)
-    qml.adjoint(embedding_circuit, (Y))
-    return qml.expval(qml.PauliZ(i) for i in range(8))
+data = np.genfromtxt('HTRU_2.csv', delimiter=',', skip_header=0)  
+x_train = data[:, :-1]
 
-test = QSVM_circuit(X, Y)
+nb_lignes = data.shape[0]
+solution = data[:, -1]
+
+
+
+for i in range(len(x_train)):
+    m = np.max(x_train[i])
+    x_train[i] = x_train[i]/m*np.pi/2  
+
+
+
+nb_qubits = len(x_train[0])
+projector = np.zeros((2**nb_qubits, 2**nb_qubits))
+projector[0, 0]=1
+
+
+essai = x_train[1:50, :]
+
+matrix = np.array([[kernel(a, b, AngleEmbedding) for b in essai] for a in essai])
+
+fig, ax = plt.subplots()
+im = ax.imshow(matrix, cmap = 'YlOrBr')
+
+
+
+
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+
+cbar = fig.colorbar(im, ax=ax)
+cbar.set_label("Amount of Classifications", rotation=270, labelpad=15, fontsize = 14)
+
+plt.plot()
+
+y = 1+2
