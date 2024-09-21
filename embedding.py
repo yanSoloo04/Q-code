@@ -1,10 +1,9 @@
 import pennylane as qml
 import matplotlib.pyplot as plt
 import numpy as np 
-from matplotlib import cm
-from sklearn.datasets import make_circles
-from sklearn.model_selection import train_test_split
 
+import pandas as pd
+from matplotlib import cm
 
 dev = qml.device('default.qubit', wires=3)
 
@@ -15,13 +14,31 @@ dev = qml.device('default.qubit', wires=3)
 @qml.qnode(dev)
 def amplitude_circuit(f=None):
     qml.AmplitudeEmbedding(features=f, wires=range(3), normalize=True)
-    return qml.expval(qml.Z(0)), qml.state()
+    return qml.expval(qml.PauliZ(0)), qml.state()
 
-# example with data point numbered 15428 -> 0
-data_point = [135.0703125,47.13812543,0.046870269,0.012329002,2.537625418,14.13626077,8.706149281,107.1620941]
-result, state = amplitude_circuit(f=data_point)
+
+# Load the dataset
+data = pd.read_csv('HTRU_2.csv')
+
+# select the 10000th row as an example
+data_point = data.iloc[10000, :8]
+
+# Convert the data point to a Nparray
+data_point_np = data_point.to_numpy()
+
+#print(data_point_np.shape)  # Should be (8,)
+#print(data_point_np)  # Print to see the data point
+#print(data_point_np.ndim == 1)  # Should return True
+
+
+result, state = amplitude_circuit(f=data_point_np)
 print(state)
 
 print("Expectation value:", result)
 print("Quantum state:", state)
 
+result, state = amplitude_circuit(f=data_point_np)
+
+# Output the results
+print("Expectation value:", result)
+print("Quantum state:", state)
