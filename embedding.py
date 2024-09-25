@@ -5,40 +5,58 @@ import numpy as np
 import pandas as pd
 from matplotlib import cm
 
-dev = qml.device('default.qubit', wires=3)
-
+dev1 = qml.device('default.qubit', wires=3)
+dev2 = qml.device('default.qubit', wires=8)
 # feature: data that we wish to embed
 # wires: wires on which we wish to embed the data
 # normalize: if we wish for the state to be automatically normalized
 
-@qml.qnode(dev)
+@qml.qnode(dev1)
 def amplitude_circuit(f=None):
     qml.AmplitudeEmbedding(features=f, wires=range(3), normalize=True)
     return qml.expval(qml.PauliZ(0)), qml.state()
 
+@qml.qnode(dev2)
+def basis_embedding(data, n_qubits):
+
+    binary_array = data_to_binary_representation(data)
+    qml.BasisState(binary_array, wires=range(n_qubits))
+    return qml.expval(qml.PauliZ(0)), qml.state()
+
+def data_to_binary_representation(data):
+    if (np.min(data) != np.max(data)):
+        normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
+    else :
+        raise ValueError("Input data is constant and can't be normalized.")
+        #normalized_data = 0
+
+    # Converts normalized data to binary
+    binary_data = (normalized_data > 0.5).astype(int)
+
+    return binary_data
 
 # Load the dataset
 data = pd.read_csv('HTRU_2.csv')
 
-# select the 10000th row as an example
-data_point = data.iloc[10000, :8]
+# Select the 10000th row as an example and convert it to a NumPy array
+data_point = data.iloc[10000, :8].to_numpy(dtype=float)
 
-# Convert the data point to a Nparray
-data_point_np = data_point.to_numpy()
+# Call qml.draw_mpl with the NumPy array
+qml.drawer.use_style("sketch_dark")  # Set the plot style
+
+# Drawing the basis_embedding circuit
+circuit_amplitude= qml.draw_mpl(amplitude_circuit)(data_point)
+circuit_basis= qml.draw_mpl(basis_embedding)(data_point, 8)
+plt.show()
+
 
 #print(data_point_np.shape)  # Should be (8,)
 #print(data_point_np)  # Print to see the data point
 #print(data_point_np.ndim == 1)  # Should return True
 
+#result, state = amplitude_circuit(f=data_point_np)
+#result, state = basis_embedding(data_point_np, 8)
 
-result, state = amplitude_circuit(f=data_point_np)
-print(state)
-
-print("Expectation value:", result)
-print("Quantum state:", state)
-
-result, state = amplitude_circuit(f=data_point_np)
-
-# Output the results
-print("Expectation value:", result)
-print("Quantum state:", state)
+#print(state)
+#print("Expectation value:", result)
+#print("Quantum state:", state)
