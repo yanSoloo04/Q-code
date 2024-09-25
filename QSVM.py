@@ -8,6 +8,8 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import random
+import pandas as pd
 
 
 def parameters_in_angles(x_train: NDArray)-> NDArray:
@@ -23,18 +25,17 @@ device = qml.device("default.qubit")
 def kernel(x: NDArray, y: NDArray):
     assert(len(x) == len(y))
     nb_qubits = len(x)
-    projector = np.zeros((2**nb_qubits, 2**nb_qubits))
-    projector[0, 0]=1
+    
 
     AngleEmbedding(features = x, wires = range(nb_qubits))
     qml.adjoint(AngleEmbedding(features = y, wires = range(nb_qubits)))
-    return qml.expval(qml.Hermitian(projector, wires = range(nb_qubits)))
+    return qml.probs(wires = range(8))
 
 
 def kernel_matrix(A: NDArray, B: NDArray)-> NDArray:
     """Compute the matrix whose entries are the kernel
        evaluated on pairwise data from sets A and B."""
-    return np.array([[kernel(a, b) for b in B] for a in A])
+    return np.array([[kernel(a, b)[0] for b in B] for a in A])
 
 
 def draw_kernel_matrix(matrix: NDArray, cmap: str):
@@ -53,12 +54,39 @@ def get_htru_2_datas(filename: str)->tuple[NDArray, NDArray]:
     Y = data[:, -1]
     return X, Y
 
+def get_samples(data, sample_amount):
 
-X, y = get_htru_2_datas('HTRU_2.csv')
-shapex = X.shape
-shapey = y.shape
-X = X[0:50, :]
-y = y[0:50]
+    sample_array = []
+    zero_value = 1
+    one_value = 1
+    single_data = []
+
+    while len(sample_array) < sample_amount:
+        single_data = random.choice(data)
+        
+        if single_data[8] == 0.0 and zero_value <= (sample_amount/2):
+            sample_array.append(single_data)
+            zero_value += 1
+
+        elif single_data[8] == 1.0 and one_value <= (sample_amount/2):
+            sample_array.append(single_data)
+            one_value += 1
+  
+    return np.array(sample_array)
+
+
+def get_data_file():
+
+    data_file = pd.read_csv('HTRU_2.csv')
+    data_array = data_file.to_numpy()
+
+    return data_array
+
+
+x = get_data_file()
+x= np.array(get_samples(x, 50))
+y = x[:, -1]
+X = x[:, :-1]
 
 
 scaler = StandardScaler().fit(X)

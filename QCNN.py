@@ -18,8 +18,8 @@ def convution_circuit(nb_qubits: int):
 
 
 
-test = pooling_circuit(8)
-# fig, ax = qml.draw_mpl(pooling_circuit)(4)
-# fig.show()
+# test = pooling_circuit(8)
+fig, ax = qml.draw_mpl(pooling_circuit)(8)
+fig.show()
 
-y= 1+2
+y = 1+2
