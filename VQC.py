@@ -39,7 +39,6 @@ dev = qml.device("default.qubit")
 def circuit(weights, x):
     nb_qubits = len(x)
     qml.AngleEmbedding(features = x, wires = range(nb_qubits))
-    
     qml.RandomLayers(weights, wires = range(nb_qubits))
     return qml.expval(qml.PauliZ(0))
 
@@ -79,7 +78,6 @@ def get_samples(data, sample_amount):
   
     return sample_array
 
-# X, y = get_htru_2_datas('HTRU_2.csv')
 x = get_data_file()
 x= np.array(get_samples(x, 50))
 y = x[:, -1]
@@ -102,9 +100,6 @@ bias = bias_init
 for it in range(100):
 
     # Update the weights by one optimizer step, using only a limited batch of data
-    batch_index = np.random.randint(0, len(X), (50,))
-    X_batch = X[batch_index]
-    Y_batch = y[batch_index]
     weights, bias = opt.step(cost, weights, bias, X=X, Y=y)
 
     # Compute accuracy

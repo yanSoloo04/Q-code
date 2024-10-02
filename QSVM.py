@@ -54,26 +54,6 @@ def get_htru_2_datas(filename: str)->tuple[NDArray, NDArray]:
     Y = data[:, -1]
     return X, Y
 
-def get_samples(data, sample_amount):
-
-    sample_array = []
-    zero_value = 1
-    one_value = 1
-    single_data = []
-
-    while len(sample_array) < sample_amount:
-        single_data = random.choice(data)
-        
-        if single_data[8] == 0.0 and zero_value <= (sample_amount/2):
-            sample_array.append(single_data)
-            zero_value += 1
-
-        elif single_data[8] == 1.0 and one_value <= (sample_amount/2):
-            sample_array.append(single_data)
-            one_value += 1
-  
-    return np.array(sample_array)
-
 
 def get_data_file():
 
@@ -82,12 +62,34 @@ def get_data_file():
 
     return data_array
 
+def get_samples(data, sample_amount):
 
+    sample_array = []
+    index_array = []
+    zero_value = 1
+    one_value = 1
+    single_data = []
+
+    while len(sample_array) < sample_amount:
+        single_data = random.choice(data)
+        
+        if single_data[8] == 0.0 and zero_value <= (sample_amount/2):
+            single_index = single_data[-1]
+            single_data = single_data[:8]
+            sample_array.append(single_data)
+            index_array.append(single_index)
+            zero_value += 1
+
+        elif single_data[8] == 1.0 and one_value <= (sample_amount/2):
+            single_index = single_data[-1]
+            single_data = single_data[:8]
+            sample_array.append(single_data)
+            index_array.append(single_index)
+            one_value += 1
+    
+    return np.array(sample_array), np.array(index_array, dtype = int)
 x = get_data_file()
-x= np.array(get_samples(x, 50))
-y = x[:, -1]
-X = x[:, :-1]
-
+X, y= get_samples(x, 50)
 
 scaler = StandardScaler().fit(X)
 X_scaled = scaler.transform(X)
