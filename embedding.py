@@ -7,17 +7,36 @@ from matplotlib import cm
 
 dev1 = qml.device('default.qubit', wires=3)
 dev2 = qml.device('default.qubit', wires=8)
+
 # feature: data that we wish to embed
 # wires: wires on which we wish to embed the data
 # normalize: if we wish for the state to be automatically normalized
 
 @qml.qnode(dev1)
 def amplitude_circuit(f=None):
+    """Function that embeds data in a quantum circuit using amplitude embedding.
+
+    Args:
+        f = feature containing the data we wish to embed
+
+    Returns:
+        expectationMP: expectation value of the quantum state obtained (will be changed)
+        quantum state: the quantum state obtained after the embedding
+    """
     qml.AmplitudeEmbedding(features=f, wires=range(3), normalize=True)
     return qml.expval(qml.PauliZ(0)), qml.state()
 
 @qml.qnode(dev2)
 def basis_embedding(data, n_qubits):
+    """Function that embeds data in a quantum circuit using basis embedding.
+
+    Args:
+        data = array containing the data we wish to embed
+
+    Returns:
+        expectation values: expectation value of the quantum state obtained (will be changed)
+        quantum state: the quantum state obtained after the embedding
+    """
 
     binary_array = data_to_binary_representation(data)
     qml.BasisState(binary_array, wires=range(n_qubits))
