@@ -7,6 +7,7 @@ from matplotlib import cm
 
 dev1 = qml.device('default.qubit', wires=3)
 dev2 = qml.device('default.qubit', wires=8)
+dev3 = qml.device('default.qubit', wires=8)
 
 # feature: data that we wish to embed
 # wires: wires on which we wish to embed the data
@@ -41,6 +42,16 @@ def basis_embedding(data, n_qubits):
     binary_array = data_to_binary_representation(data)
     qml.BasisState(binary_array, wires=range(n_qubits))
     return qml.expval(qml.PauliZ(0)), qml.state()
+
+@qml.qnode(dev3)
+def angle_embedding(x, y, n_qubits):
+
+    assert(len(x) == len(y))
+    n_qubits = len(x)
+
+    qml.AngleEmbedding(features=x, wires=range(n_qubits))
+    qml.adjoint(qml.AngleEmbedding(features = y, wires = range(n_qubits)))
+    return qml.probs(wires = range(n_qubits))
 
 def data_to_binary_representation(data):
     if (np.min(data) != np.max(data)):
