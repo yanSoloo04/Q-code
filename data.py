@@ -43,6 +43,7 @@ def get_samples(data : NDArray, sample_amount : int, label_values : NDArray) -> 
     Args: 
         data : An array with the data 
         sample_amount : The amount of sample to try the algorithm with
+        label_values : The two labels to identify
 
     Returns:
         Sample_array : A numpy array with a balenced set of data 
