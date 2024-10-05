@@ -3,9 +3,9 @@ import random
 from numpy.typing import NDArray
 import numpy as np
 
-def get_data_file(file_path : str) -> NDArray:
+def get_csv_file(file_path : str) -> NDArray:
     """
-    Get values in a file
+    Get values in a csv file
 
     Parameters: 
         file : The path to a file with the data set to use the algorythm with 
@@ -15,6 +15,22 @@ def get_data_file(file_path : str) -> NDArray:
     """
 
     data_file = pd.read_csv(file_path)
+    data_array = data_file.to_numpy()
+
+    return data_array
+
+def get_xlsx_file(file_path : str) -> NDArray:
+    """
+    Get values in a xlsx (excel) file
+
+    Parameters: 
+        file : The path to a file with the data set to use the algorythm with 
+
+    Returns:
+        numpy array with the data set
+    """
+
+    data_file = pd.read_excel(file_path)
     data_array = data_file.to_numpy()
 
     return data_array
@@ -47,6 +63,10 @@ def get_samples(data : NDArray, sample_amount : int, label_values : NDArray) -> 
     sample_array = random_label_value2 + random_label_value1
     random.shuffle(sample_array)
 
-    index_array = [index[-1] for index in sample_array]
+    for index in sample_array :
+        if index[-1] == label_values[0] :
+            index_array.append(-1)
+        else :
+            index_array.append(1)
     
     return np.array(sample_array), np.array(index_array)
