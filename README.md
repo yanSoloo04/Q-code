@@ -1,3 +1,8 @@
-# Q-code
+# Qcode: Variational Quantum Classifier (VQC)
 
-Bienvenue dans le projet de xxxx dans le cadre du cours de BSQ-201 
+Cette branche contient le code pour le classificateur variationnel quantique, une méthode puissante utilisant des circuits paramétriques pour réaliser des tâches de classification.
+
+
+## Contenu
+- **`vqc.py`** : Script principal pour implémenter le VQC.
+
