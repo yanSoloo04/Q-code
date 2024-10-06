@@ -1,46 +1,8 @@
 from pennylane import numpy as np
 import pennylane as qml
-import matplotlib.pyplot as plt
 from numpy.typing import NDArray
 from pennylane.optimize import NesterovMomentumOptimizer
-import pandas as pd
-import random
-
-def get_data_file():
-
-    data_file = pd.read_csv('HTRU_2.csv')
-    data_array = data_file.to_numpy()
-
-    return data_array
-
-def get_samples(data, sample_amount):
-
-    sample_array = []
-    index_array = []
-    zero_value = 1
-    one_value = 1
-    single_data = []
-
-    while len(sample_array) < sample_amount:
-        single_data = random.choice(data)
-        
-        if single_data[8] == 0.0 and zero_value <= (sample_amount/2):
-            single_index = single_data[-1]
-            single_data = single_data[:8]
-            sample_array.append(single_data)
-            index_array.append(single_index)
-            zero_value += 1
-
-        elif single_data[8] == 1.0 and one_value <= (sample_amount/2):
-            single_index = single_data[-1]
-            single_data = single_data[:8]
-            sample_array.append(single_data)
-            index_array.append(single_index)
-            one_value += 1
-    
-    return np.array(sample_array), np.array(index_array, dtype = int)
-
-
+from data import get_data_file, get_samples
 
 
 def pooling_circuit(nb_qubits: int):
@@ -58,17 +20,20 @@ def convolution_circuit(weights:NDArray):
         qml.RY(phi = weights[i], wires = i)
         qml.RY(phi = weights[j], wires = j)
         qml.CNOT(wires = [i, j])
+
     
 
 
 dev = qml.device("default.qubit")
 @qml.qnode(dev)
 def qcnn_circuit(parameters:NDArray, weights: NDArray):
+
     nb_qubits_init = len(parameters)
     qml.AngleEmbedding(parameters, wires = range(nb_qubits_init))
     nb_qubits = nb_qubits_init
     while nb_qubits%2 == 0:
-        convolution_circuit(weights[:nb_qubits])
+        # convolution_circuit(weights[:nb_qubits])
+        qml.RandomLayers(weights, wires = range(nb_qubits))
         qml.Barrier(wires = range(nb_qubits_init))
         pooling_circuit(nb_qubits)
         qml.Barrier(wires = range(nb_qubits_init))
@@ -79,7 +44,7 @@ def qcnn_classifier(parameters, weights, bias):
     return qcnn_circuit(parameters, weights) + bias
 
 def cost(weights, bias, X, Y):
-    predictions = [qcnn_classifier(weights, x, bias) for x in X]
+    predictions = [qcnn_classifier(x, weights, bias) for x in X]
     return square_loss(Y, predictions)
 
 def accuracy(labels, predictions):
@@ -98,6 +63,7 @@ X, y= get_samples(x, 50)
 
 m = np.max(X)
 X = X/m*np.pi/2
+x = X[0]
 
 y = y*2-1
 
@@ -105,7 +71,7 @@ y = y*2-1
 np.random.seed(0)
 
 nb_qubits = len(X[0])
-weights = 0.99 * np.random.randn(nb_qubits)
+weights = 0.5 * np.random.randn(2, nb_qubits)
 bias = np.array(0.0)
 
 opt = NesterovMomentumOptimizer(0.5)
