@@ -6,3 +6,4 @@ d = ['DERMASON', 'SIRA']
 e = data.get_xlsx_file('Dry_Bean_Dataset.xlsx')
 f, g = data.get_samples(e, 10, d)
 print(f)
+print(g)

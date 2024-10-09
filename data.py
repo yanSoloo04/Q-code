@@ -40,21 +40,20 @@ def get_samples(data : NDArray, sample_amount : int, label_values : NDArray) -> 
     """
     Makes an array with a balanced amount of data type
 
-    Args: 
-        data : An array with the data 
-        sample_amount : The amount of sample to try the algorithm with
-        label_values : The two labels to identify
+    Parameters: 
+    - data: An array with the data 
+    - sample_amount (float): The amount of sample to try the algorithm with
+    - label_values: The two labels to identify
 
     Returns:
-        Sample_array : A numpy array with a balenced set of data 
-        Index_array : A numpy array with the labels attached to the data
+    tuple[NDArray, NDArray]: A numpy array with a balenced set of data.  A numpy array with the labels attached to the data
     """
 
     sample_array = []
     index_array = []
 
-    label_value1 = list([single_data1 for single_data1 in data if single_data1[-1] == label_values[0]])
-    label_value2 = list([single_data2 for single_data2 in data if single_data2[-1] == label_values[1]])
+    label_value1 = list([single_data1[:-1] for single_data1 in data if single_data1[-1] == label_values[0]])
+    label_value2 = list([single_data2[:-1] for single_data2 in data if single_data2[-1] == label_values[1]])
 
     sample_amount = min(sample_amount, len(label_value1), len(label_value2))
 
