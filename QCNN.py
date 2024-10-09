@@ -2,7 +2,7 @@ from pennylane import numpy as np
 import pennylane as qml
 from numpy.typing import NDArray
 from pennylane.optimize import NesterovMomentumOptimizer
-from data import get_data_file, get_samples
+from data import get_csv_file, get_samples, get_xlsx_file
 
 
 def pooling_circuit(nb_qubits: int):
@@ -21,8 +21,6 @@ def convolution_circuit(weights:NDArray):
         qml.RY(phi = weights[j], wires = j)
         qml.CNOT(wires = [i, j])
 
-    
-
 
 dev = qml.device("default.qubit")
 @qml.qnode(dev)
@@ -32,8 +30,8 @@ def qcnn_circuit(parameters:NDArray, weights: NDArray):
     qml.AngleEmbedding(parameters, wires = range(nb_qubits_init))
     nb_qubits = nb_qubits_init
     while nb_qubits%2 == 0:
-        # convolution_circuit(weights[:nb_qubits])
-        qml.RandomLayers(weights, wires = range(nb_qubits))
+        convolution_circuit(weights[:nb_qubits])
+        # qml.RandomLayers(weights, wires = range(nb_qubits))
         qml.Barrier(wires = range(nb_qubits_init))
         pooling_circuit(nb_qubits)
         qml.Barrier(wires = range(nb_qubits_init))
@@ -53,30 +51,30 @@ def accuracy(labels, predictions):
     return acc
 
 def square_loss(labels, predictions):
-    # We use a call to qml.math.stack to allow subtracting the arrays directly
     return np.mean((labels - qml.math.stack(predictions)) ** 2)
 
     
-x = get_data_file()
-X, y= get_samples(x, 50)
+x = get_xlsx_file('Dry_Bean_Dataset.xlsx')
+x_to_scale, y = get_samples(x, 50, ['SIRA', 'DERMASON'])
 
 
-m = np.max(X)
-X = X/m*np.pi/2
-x = X[0]
+m = np.max(x_to_scale)
+X = x_to_scale/m*np.pi/2
 
-y = y*2-1
-
-
-np.random.seed(0)
+#setting a seed for the weights for comparison between different embeddings
+np.random.seed(69420)
 
 nb_qubits = len(X[0])
-weights = 0.5 * np.random.randn(2, nb_qubits)
+# weights = 0.07 * np.random.randn(nb_qubits)
+weights = np.array([-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
+ -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
+ -0.03777734, -0.09488475,  0.01733188,  0.05791952])
 bias = np.array(0.0)
 
-opt = NesterovMomentumOptimizer(0.5)
+opt = NesterovMomentumOptimizer(0.19)
 
-for it in range(100):
+nb_iterations = 20
+for it in range(nb_iterations):
 
     # Update the weights by one optimizer step
     weights, bias = opt.step(cost, weights, bias, X=X, Y=y)
@@ -87,4 +85,9 @@ for it in range(100):
     current_cost = cost(weights, bias, X, y)
     acc = accuracy(y, predictions)
     print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
+    #Printing the labels for the person behind the chair hehe
+    print('Actual labels: ', y)
+    print('Predicted labels: ', np.array(predictions))
+    print('-----------------------------------------------------------------------------------------')
+    
 
