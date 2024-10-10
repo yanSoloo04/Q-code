@@ -62,7 +62,7 @@ m = np.max(x_to_scale)
 X = x_to_scale/m*np.pi/2
 
 #setting a seed for the weights for comparison between different embeddings
-np.random.seed(69420)
+np.random.seed(0)
 
 nb_qubits = len(X[0])
 # weights = 0.07 * np.random.randn(nb_qubits)
@@ -72,12 +72,16 @@ weights = np.array([-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191
 bias = np.array(0.0)
 
 opt = NesterovMomentumOptimizer(0.19)
+batch_size = 5
 
 nb_iterations = 20
 for it in range(nb_iterations):
 
     # Update the weights by one optimizer step
-    weights, bias = opt.step(cost, weights, bias, X=X, Y=y)
+    batch_index = np.random.randint(0, len(X), (batch_size,))
+    X_batch = X[batch_index]
+    Y_batch = y[batch_index]
+    weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
     # Compute accuracy
     predictions = [np.sign(qcnn_classifier(x, weights, bias)) for x in X]

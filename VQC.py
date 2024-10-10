@@ -100,8 +100,8 @@ def cost(weights: NDArray, bias:NDArray, X : NDArray, Y : NDArray):
 
 #we get the parameters and the labels associated with the parameters in two distinct arrays
 nb_datas = 50
-x = get_csv_file("HTRU_2.csv")
-X_to_reduce, y= get_samples(x, nb_datas, [0, 1])
+x = get_xlsx_file("Dry_Bean_Dataset.xlsx")
+X_to_reduce, y= get_samples(x, nb_datas, ['SIRA', 'DERMASON'])
 
 #We take the max to be pi/2 and the rest of the parameters to be less than pi/2
 m = np.max(X_to_reduce)
@@ -116,17 +116,28 @@ num_qubits = len(X[0])
 
 #initialisation of the bias and the weights which are random
 num_layers = 2
-weights = 0.01 * np.random.randn(num_layers, num_qubits, requires_grad = True)
+# weights = np.random.randn(num_layers, num_qubits, requires_grad = True)
+weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
+ -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
+ -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
+ -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
+ -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
 bias = np.array(0.0, requires_grad = True)
 
 opt = NesterovMomentumOptimizer(0.52)
+batch_size = 10
+
+
 
 #iteration to optimise the vqc for better results
 nb_iterations = 20
 for it in range(nb_iterations):
 
     # Update the weights by one optimizer step
-    weights, bias = opt.step(cost, weights, bias, X=X, Y=y)
+    X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
+    m = np.max(X_to_reduce)
+    X_batch = X_batch_to_reduce/m*np.pi/2
+    weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
     # Compute accuracy using np.sign for the labels to be -1 or 1
     predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]

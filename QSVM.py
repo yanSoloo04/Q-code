@@ -24,8 +24,8 @@ def kernel(x: NDArray, y: NDArray):
     assert(len(x) == len(y))
     nb_qubits = len(x)
     AngleEmbedding(features = x, wires = range(nb_qubits))
-    qml.adjoint(AngleEmbedding(features = y, wires = range(nb_qubits)))
-    return qml.probs(wires = range(8))
+    qml.adjoint(AngleEmbedding(rotation='X', features = y, wires = range(nb_qubits)))
+    return qml.probs(wires = range(nb_qubits))
 
 
 def kernel_matrix(A: NDArray, B: NDArray)-> NDArray:
