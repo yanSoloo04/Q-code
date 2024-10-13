@@ -3,6 +3,9 @@ import pennylane as qml
 from pennylane.optimize import NesterovMomentumOptimizer
 from numpy.typing import NDArray
 from data import get_samples, get_csv_file, get_xlsx_file
+from qiskit.circuit.library import RealAmplitudes
+from pennylane import from_qiskit
+from qiskit.circuit import ParameterVector
 
 
 
@@ -14,7 +17,6 @@ def layer(layer_weights: NDArray):
     """
     nb_qubits = len(layer_weights)
     for i in range(nb_qubits):
-        print(layer_weights)
         qml.RY(layer_weights[i], wires=i)
     for i in range(nb_qubits):
         if i == nb_qubits-1:
@@ -35,9 +37,15 @@ def circuit(weights: NDArray, x: NDArray):
 
     Returns: the expected value of PauliZ of the first qubit of the circuit.
     """
-    nb_qubits = len(x)
-    qml.AngleEmbedding(features = x, wires = range(nb_qubits))
+    nb_qubits = 4
+    qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
     qml.RandomLayers(weights, wires = range(nb_qubits))
+
+    #qiskit ansatz
+    # ansatz = RealAmplitudes(num_qubits=nb_qubits, reps = 1 )
+    # from_qiskit(ansatz.assign_parameters(weights, inplace = False))
+
+    #Ry and CNOT ansatz
     # for layer_weights in weights:
     #     layer(layer_weights)
     return qml.expval(qml.PauliZ(0))
@@ -108,13 +116,12 @@ m = np.max(X_to_reduce)
 X = X_to_reduce/m*np.pi/2
 
 
-
 #we choose a seed for the random to be comparable using different methods
 np.random.seed(0)
 
 num_qubits = len(X[0])
 
-#initialisation of the bias and the weights which are random
+#initialization of the bias and the weights which are random
 num_layers = 2
 # weights = np.random.randn(num_layers, num_qubits, requires_grad = True)
 weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
@@ -122,11 +129,10 @@ weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.0219
  -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
  -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
  -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
-bias = np.array(0.0, requires_grad = True)
+bias = np.array(0.0)
 
-opt = NesterovMomentumOptimizer(0.52)
+opt = NesterovMomentumOptimizer(0.35)
 batch_size = 10
-
 
 
 #iteration to optimise the vqc for better results
@@ -135,7 +141,7 @@ for it in range(nb_iterations):
 
     # Update the weights by one optimizer step
     X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
-    m = np.max(X_to_reduce)
+    m = np.max(X_batch_to_reduce)
     X_batch = X_batch_to_reduce/m*np.pi/2
     weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
@@ -146,7 +152,7 @@ for it in range(nb_iterations):
     current_cost = cost(weights, bias, X, y)
     acc = accuracy(y, predictions)
     print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
-    #Printing the labels for the person behind the chair hehe
+    #Printing the labels for visual interpretation
     print('Actual labels: ', y)
     print('Predicted labels: ', np.array(predictions))
     print('-----------------------------------------------------------------------------------------')

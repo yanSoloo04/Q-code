@@ -7,8 +7,8 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from data import get_csv_file, get_samples, get_xlsx_file
 
-x = get_csv_file('HTRU_2.csv')
-X, y = get_samples(x, 50, [0, 1])
+x = get_xlsx_file('Dry_Bean_Dataset.xlsx')
+X, y = get_samples(x, 50, ['SIRA', 'DERMASON'])
 
 scaler = StandardScaler().fit(X)
 X_scaled = scaler.transform(X)
