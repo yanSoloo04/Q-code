@@ -45,16 +45,22 @@ def qcnn_circuit(parameters:NDArray, weights: NDArray):
 
     Returns: The expected value of the first qubit after applying the QCNN circuit
     """
+    nb_qubits_init = len(parameters)
 
-    nb_qubits_init = 4
-    qml.AmplitudeEmbedding(parameters, wires = range(nb_qubits_init), normalize=True)
+    ##Choosing the embedding
+    # qml.AmplitudeEmbedding(parameters, wires = range(nb_qubits_init), normalize=True)
+    qml.AngleEmbedding(features= parameters, wires = range(nb_qubits_init), rotation='Z' )
+
+    
     nb_qubits = nb_qubits_init
     while nb_qubits != 1:
+        #1 Step of convolution and pooling
         convolution_circuit(weights[:nb_qubits])
         # qml.RandomLayers(weights, wires = range(nb_qubits))
         qml.Barrier(wires = range(nb_qubits_init))
         pooling_circuit(nb_qubits)
         qml.Barrier(wires = range(nb_qubits_init))
+        #If the number of qubits is odd, we use math.ceil because there's one qubit not used in the pooling
         nb_qubits = math.ceil(nb_qubits/2)
     return qml.expval(qml.PauliZ(0))
 
@@ -114,8 +120,8 @@ def square_loss(labels, predictions):
     return np.mean((labels - qml.math.stack(predictions)) ** 2)
 
 #getting the dataset into an array
-x = get_xlsx_file('Dry_Bean_Dataset.xlsx')
-x_to_scale, y = get_samples(x, 50, ['SIRA', 'DERMASON'])
+x = get_csv_file('HTRU_2.csv')
+x_to_scale, y = get_samples(x, 50, [0, 1])
 
 #scaling the parameters
 m = np.max(x_to_scale)
@@ -129,26 +135,24 @@ nb_qubits = len(X[0])
 #initialization of the bias and the weights which are random
 # weights = 0.07 * np.random.randn(nb_qubits)
 weights = np.array([-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
- -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
- -0.03777734, -0.09488475,  0.01733188,  0.05791952])
+ -0.14784011, -0.0409323])
 bias = np.array(0.0)
-norm = np.linalg.norm(weights)
-weights = weights/norm
 
-opt = NesterovMomentumOptimizer(0.15)
+
+opt = NesterovMomentumOptimizer(0.25)
 batch_size = 20
 
 #iteration to optimise the qcnn for better results
-nb_iterations = 40
+nb_iterations = 20
 for it in range(nb_iterations):
 
-    # Update the weights by one optimizer step
-    X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
+    # Update the weights by one optimizer step using a training batch
+    X_batch_to_reduce, Y_batch= get_samples(x, batch_size, [0, 1])
     m = np.max(X_batch_to_reduce)
     X_batch = X_batch_to_reduce/m*np.pi/2
     weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
-    # Compute accuracy using np.sign for the labels to be -1 or 1
+    # Compute predictions using np.sign for the labels to be -1 or 1
     predictions = [np.sign(qcnn_classifier(x, weights, bias)) for x in X]
 
     #Printing the cost and the accuracy of the current iteration
@@ -160,3 +164,4 @@ for it in range(nb_iterations):
     print('Predicted labels: ', np.array(predictions))
     print('-----------------------------------------------------------------------------------------')
 
+fig, ax = qml.draw_mpl(qcnn_circuit)([1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8])

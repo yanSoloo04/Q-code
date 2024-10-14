@@ -1,8 +1,7 @@
 import numpy as np
 import pennylane as qml
-from pennylane import AngleEmbedding
+from pennylane import AngleEmbedding, AmplitudeEmbedding
 from numpy.typing import NDArray
-from typing import Callable
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
@@ -38,9 +37,16 @@ def kernel(x: NDArray, y: NDArray):
     Returns: the probability of mesuring for all of the basis states given the state of the system.
     """
     assert(len(x) == len(y))
-    nb_qubits = 4
-    qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize = True)
-    qml.adjoint(qml.AmplitudeEmbedding(normalize=True, features = y, wires = range(nb_qubits)))
+
+    ##amplitude embedding
+    # nb_qubits = 3
+    # AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize = True)
+    # qml.adjoint(AmplitudeEmbedding(normalize=True, features = y, wires = range(nb_qubits)))
+
+    ##Angle embedding
+    nb_qubits = len(x)
+    AngleEmbedding(features = x, wires = range(nb_qubits), rotation = 'Y')
+    qml.adjoint(AngleEmbedding(features = y, wires = range(nb_qubits), rotation = 'Y'))
     return qml.probs(wires = range(nb_qubits))
 
 
@@ -67,8 +73,8 @@ def draw_kernel_matrix(matrix: NDArray, cmap: str):
     plt.plot()
 
 #getting the parameters and their labels from the file
-x = get_xlsx_file('Dry_Bean_Dataset.xlsx')
-X, y= get_samples(x, 50, ['SIRA', 'DERMASON'])
+x = get_csv_file('HTRU_2.csv')
+X, y= get_samples(x, 50, [0, 1])
 
 #scaling the parameters
 scaler = StandardScaler().fit(X)

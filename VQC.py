@@ -11,17 +11,18 @@ from qiskit.circuit import ParameterVector
 
 def layer(layer_weights: NDArray):
     """
-    This function creates the circuit of one layer of the ansatz for the vqc
+    This function creates the circuit of one layer of the ansatz for the vqc. We use CNOT to create intrication.
     Args:
-    layer_weights (NDArray): the weights for this layer of the ansatz
+    layer_weights (NDArray): the weights used for the Ry for this layer of the ansatz
     """
-    nb_qubits = len(layer_weights)
+    nb_qubits = 4
     for i in range(nb_qubits):
         qml.RY(layer_weights[i], wires=i)
     for i in range(nb_qubits):
         if i == nb_qubits-1:
             qml.CNOT([i, 0])
-        qml.CNOT([i, i+1])
+        else:
+            qml.CNOT([i, i+1])
 
     
 
@@ -39,9 +40,11 @@ def circuit(weights: NDArray, x: NDArray):
     """
     nb_qubits = 4
     qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
+
+    #Random layer ansatz
     qml.RandomLayers(weights, wires = range(nb_qubits))
 
-    #qiskit ansatz
+    #Qiskit ansatz
     # ansatz = RealAmplitudes(num_qubits=nb_qubits, reps = 1 )
     # from_qiskit(ansatz.assign_parameters(weights, inplace = False))
 
@@ -129,10 +132,12 @@ weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.0219
  -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
  -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
  -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
+norm = np.linalg.norm(weights)
+weights = weights/norm
 bias = np.array(0.0)
 
 opt = NesterovMomentumOptimizer(0.35)
-batch_size = 10
+batch_size = 20
 
 
 #iteration to optimise the vqc for better results
@@ -145,7 +150,7 @@ for it in range(nb_iterations):
     X_batch = X_batch_to_reduce/m*np.pi/2
     weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
-    # Compute accuracy using np.sign for the labels to be -1 or 1
+    # Compute predictions using np.sign for the labels to be -1 or 1
     predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]
 
     #Printing the cost and the accuracy of the current iteration
@@ -156,3 +161,4 @@ for it in range(nb_iterations):
     print('Actual labels: ', y)
     print('Predicted labels: ', np.array(predictions))
     print('-----------------------------------------------------------------------------------------')
+
