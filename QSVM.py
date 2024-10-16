@@ -71,6 +71,7 @@ def draw_kernel_matrix(matrix: NDArray, cmap: str):
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label("Amount of Classifications", rotation=270, labelpad=15, fontsize = 14)
     plt.plot()
+    plt.savefig('kernel_HTRU_2_AngleEmbedding')
 
 #getting the parameters and their labels from the file
 x = get_csv_file('HTRU_2.csv')
@@ -82,7 +83,8 @@ X_scaled = scaler.transform(X)
 
 
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y)
-draw_kernel_matrix(kernel_matrix(X_train[1:50, :], X_train[1:50, :]), cmap = 'BuGn')
+draw_kernel_matrix(kernel_matrix(X_train[1:50, :], X_train[1:50, :]), cmap = 'binary')
+
 
 #predicting the labels using the quantum kernel matrix
 svm = SVC(kernel=kernel_matrix).fit(X_train, y_train)

@@ -15,7 +15,7 @@ def layer(layer_weights: NDArray):
     Args:
     layer_weights (NDArray): the weights used for the Ry for this layer of the ansatz
     """
-    nb_qubits = 4
+    nb_qubits =4
     for i in range(nb_qubits):
         qml.RY(layer_weights[i], wires=i)
     for i in range(nb_qubits):
@@ -42,15 +42,11 @@ def circuit(weights: NDArray, x: NDArray):
     qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
 
     #Random layer ansatz
-    qml.RandomLayers(weights, wires = range(nb_qubits))
-
-    #Qiskit ansatz
-    # ansatz = RealAmplitudes(num_qubits=nb_qubits, reps = 1 )
-    # from_qiskit(ansatz.assign_parameters(weights, inplace = False))
+    # qml.RandomLayers(weights, wires = range(nb_qubits))
 
     #Ry and CNOT ansatz
-    # for layer_weights in weights:
-    #     layer(layer_weights)
+    for layer_weights in weights:
+        layer(layer_weights)
     return qml.expval(qml.PauliZ(0))
 
 def variational_classifier(weights: NDArray, bias :NDArray, x: NDArray):
@@ -122,7 +118,7 @@ X = X_to_reduce/m*np.pi/2
 #we choose a seed for the random to be comparable using different methods
 np.random.seed(0)
 
-num_qubits = len(X[0])
+num_qubits = 4
 
 #initialization of the bias and the weights which are random
 num_layers = 2
@@ -132,8 +128,7 @@ weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.0219
  -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
  -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
  -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
-norm = np.linalg.norm(weights)
-weights = weights/norm
+
 bias = np.array(0.0)
 
 opt = NesterovMomentumOptimizer(0.35)
