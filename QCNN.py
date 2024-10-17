@@ -45,11 +45,11 @@ def qcnn_circuit(parameters:NDArray, weights: NDArray):
 
     Returns: The expected value of the first qubit after applying the QCNN circuit
     """
-    nb_qubits_init = len(parameters)
+    nb_qubits_init = 3
 
     ##Choosing the embedding
-    # qml.AmplitudeEmbedding(parameters, wires = range(nb_qubits_init), normalize=True)
-    qml.AngleEmbedding(features= parameters, wires = range(nb_qubits_init), rotation='Z' )
+    qml.AmplitudeEmbedding(parameters, wires = range(nb_qubits_init), normalize=True)
+    # qml.AngleEmbedding(features= parameters, wires = range(nb_qubits_init), rotation='Z' )
 
     
     nb_qubits = nb_qubits_init
@@ -130,16 +130,17 @@ X = x_to_scale/m*np.pi/2
 #setting a seed for the weights for comparison between different embeddings
 np.random.seed(0)
 
-nb_qubits = len(X[0])
+nb_qubits = 3
 
 #initialization of the bias and the weights which are random
 # weights = 0.07 * np.random.randn(nb_qubits)
 weights = np.array([-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
- -0.14784011, -0.0409323])
+ -0.14784011, -0.0409323]
+)
 bias = np.array(0.0)
 
 
-opt = NesterovMomentumOptimizer(0.25)
+opt = NesterovMomentumOptimizer(0.5)
 batch_size = 20
 
 #iteration to optimise the qcnn for better results
@@ -164,4 +165,5 @@ for it in range(nb_iterations):
     print('Predicted labels: ', np.array(predictions))
     print('-----------------------------------------------------------------------------------------')
 
-fig, ax = qml.draw_mpl(qcnn_circuit)([1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8])
+# fig, ax = qml.draw_mpl(qcnn_circuit)([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13, 14, 15, 16], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13, 14, 15, 16])
+# fig.savefig('qcnn_with_amplitude_dry_bean_dataset')
