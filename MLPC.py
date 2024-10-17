@@ -28,6 +28,7 @@ def run_MLPC(parameters:NDArray, labels:NDArray, matrix:bool = False, filename:s
     mlp.fit(X_train, y_train)
 
     #predicting the labels with the testing parameters
+    print('Classifying the datas...')
     predictions = mlp.predict(X_test)
 
     #calculating the accuracy score and printing the labels for manual verification
@@ -37,8 +38,12 @@ def run_MLPC(parameters:NDArray, labels:NDArray, matrix:bool = False, filename:s
 
     #saving the confusion matrix if the user wants to
     if matrix == True:
+        print('Constructing the matrix...')
         cm = confusion_matrix(y_test, predictions)
+        print('Drawing the matrix...')
         draw_confusion_matrix(cm, filename)
+        print('matrix has been draw')
+        
     return acc
 
 def draw_confusion_matrix(matrix: NDArray, file_name:str):

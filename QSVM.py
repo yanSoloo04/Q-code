@@ -8,7 +8,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import math
-from data import get_csv_file, get_samples, get_xlsx_file
 
 
 device = qml.device("default.qubit")
@@ -34,7 +33,7 @@ def kernel(x: NDArray, y: NDArray, embedding:str, rot:str = ''):
         AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize = True)
         qml.adjoint(AmplitudeEmbedding(normalize=True, features = y, wires = range(nb_qubits)))
 
-    ##Angle embedding
+    #Angle embedding
     if embedding == 'angle':
         assert rot in ['X', 'Y', 'Z'], 'rot as to be either Y, X or Z for the angle embedding'
         nb_qubits = len(x)
@@ -43,7 +42,7 @@ def kernel(x: NDArray, y: NDArray, embedding:str, rot:str = ''):
     return qml.probs(wires = range(nb_qubits))
 
 
-def kernel_matrix(A: NDArray, B: NDArray, embedding:str, rot:str)-> NDArray:
+def kernel_matrix(A: NDArray, B: NDArray, embedding:str, rot:str = '')-> NDArray:
     """Compute the matrix whose entries are the kernel
        evaluated on pairwise data from sets A and B.
     """
@@ -56,7 +55,7 @@ def draw_kernel_matrix(matrix: NDArray, cmap: str, filename:str):
     Args:
     matrix (NDArray): the matrix to plot
     cmap (str): the cmap used for the plot of the matrix
-    filnema (str): the name of the file where the kernel matrix will be saved
+    filename (str): the name of the file where the kernel matrix will be saved
     """
     fig, ax = plt.subplots()
     im = ax.imshow(matrix, cmap = cmap)
@@ -64,21 +63,38 @@ def draw_kernel_matrix(matrix: NDArray, cmap: str, filename:str):
     ax.set_ylabel("y")
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label("Amount of Classifications", rotation=270, labelpad=15, fontsize = 14)
-    plt.plot()
     plt.savefig(filename)
 
 
-def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str, filename:str)-> float:
+def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str = '', save_matrix:bool = False, filename:str= '')-> float:
+    """
+    Classify the given datas using the QSVM method.
+
+    Args:
+    parameters (NDArray): the parameters for each given labels in the form of a 2D numpy array
+    labels (NDArray): the labels corresponding to the parameters in the form of a 1D numpy array
+    embedding (str): the embedding to use for encoding the parameters. This argument can only be 'amplitude'or 'angle'
+    rot (str): the axis of the rotation for the angle embedding (is '' if the embedding is amplitude). As to be either 'X', 'Y' or 'Z'.
+    save_matrix (bool): the users specifies wheter he wants to print the confusion matrix or not.
+    filename (str): the name of the file for the confusion matrix to be saved as
+
+    returns: the accuracy score for the classification using the QSVM in a float object 
+    """
     #scaling the parameters and setting a batch for training and one for testing
     scaler = StandardScaler().fit(parameters)
     X_scaled = scaler.transform(parameters)
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y)
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, labels)
 
     #Drawing the kernel matrix
-    draw_kernel_matrix(kernel_matrix(X_train[1:50, :], X_train[1:50, :], embedding = embedding, rot = rot), cmap = 'binary', filename = filename)
+    if save_matrix:
+        print('Drawing matrix...')
+        draw_kernel_matrix(kernel_matrix(X_train[1:50, :], X_train[1:50, :], embedding = embedding, rot = rot), cmap = 'binary', filename = filename)
+        print('Matrix has been draw')
 
     #predicting the labels using the quantum kernel matrix
+    print('Establishing the support vectors...')
     svm = SVC(kernel=lambda X, Y: kernel_matrix(X, Y, embedding=embedding, rot=rot)).fit(X_train, y_train)
+    print('Calculating predictions...')
     predictions = svm.predict(X_test)
 
     #printing the labels for comparison
@@ -87,10 +103,3 @@ def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str, filenam
     #returning the accuracy score
     acc = accuracy_score(predictions, y_test)
     return acc
-
-
-#getting the parameters and their labels from the file
-x = get_csv_file('HTRU_2.csv')
-X, y= get_samples(x, 100, [0, 1])
-acc = run_QSVM(X, y, 'amplitude', '')
-print(acc)

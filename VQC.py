@@ -1,5 +1,6 @@
 from pennylane import numpy as np
 import pennylane as qml
+import math
 from pennylane.optimize import NesterovMomentumOptimizer
 from numpy.typing import NDArray
 from data import get_samples, get_csv_file, get_xlsx_file
@@ -28,7 +29,7 @@ def layer(layer_weights: NDArray):
 
 dev = qml.device("default.qubit")
 @qml.qnode(dev)
-def circuit(weights: NDArray, x: NDArray):
+def circuit(weights: NDArray, x: NDArray, ansatz:str, embedding:str, rot:str = ''):
     """ 
     This function creates the circuit for one iterration of the quantum variationnal classifier and evaluates the expected value of PauliZ on the first qubit.
     
@@ -38,15 +39,26 @@ def circuit(weights: NDArray, x: NDArray):
 
     Returns: the expected value of PauliZ of the first qubit of the circuit.
     """
-    nb_qubits = 3
-    qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
+    #amplitude embedding
+    if embedding == 'amplitude':
+        nb_qubits = math.log2(len(x))
+        qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
+    
+    #angle embedding
+    if embedding == 'angle':
+        assert rot in ['X', 'Y', 'Z'], 'rot as to be either X, Y, or Z for the angle embedding'
+        nb_qubits = len(x)
+        qml.AngleEmbedding(features = x, wires = range(nb_qubits), rotation = rot)
 
     #Random layer ansatz
-    # qml.RandomLayers(weights, wires = range(nb_qubits))
+    if ansatz == 'random':
+        qml.RandomLayers(weights, wires = range(nb_qubits))
 
     #Ry and CNOT ansatz
-    for layer_weights in weights:
-        layer(layer_weights)
+    if ansatz == 'layer':
+        for layer_weights in weights:
+            layer(layer_weights)
+
     return qml.expval(qml.PauliZ(0))
 
 def variational_classifier(weights: NDArray, bias :NDArray, x: NDArray):
@@ -105,57 +117,62 @@ def cost(weights: NDArray, bias:NDArray, X : NDArray, Y : NDArray):
     predictions = [variational_classifier(weights, bias, x) for x in X]
     return square_loss(Y, predictions)
 
-#we get the parameters and the labels associated with the parameters in two distinct arrays
+
+def run_VQC(dataset:NDArray, nb_datas: int, batch_size:int, labels: tuple, ansatz:str, embedding:str, rot:str = '', nb_iterations:int = 20, num_layers:int = 2)-> float:
+    assert embedding in ['angle', 'amplitude'], 'Two embedding methods are available: the angle embedding or the amplitude embedding'
+    assert ansatz in ['random', 'layer'], 'two ansatz are available, the qml.randomlayers or a fixed one described with the function layer'
+    assert nb_datas%2 == 0, 'the number of datas has to be divisible by two because we take 50/50 datas with the labels'
+    assert batch_size%2==0, 'the number of data for a batch has to be divisible by two because we take 50/50 datas with the labels'
+    assert len(labels) == 2, 'our VQC can only classify two different labels at a time. len(labels) as to be 2'
+    assert num_layers>=2, 'the ansatz has to use 2 or more layers'
+    assert nb_iterations >=1, 'the VQC has to run at least one time...'
+
+
+    #we get the parameters and the labels associated with the parameters in two distinct arrays
+    X_to_reduce, y= get_samples(dataset, nb_datas, labels)
+
+    #We take the max to be pi/2 and the rest of the parameters to be less than pi/2
+    m = np.max(X_to_reduce)
+    X = X_to_reduce/m*np.pi/2
+    #we choose a seed for the random to be comparable using different methods
+    np.random.seed(0)
+
+    num_qubits = len(X[0])
+
+    #initialization of the bias and the weights which are random
+    weights = np.random.randn(num_layers, num_qubits, requires_grad = True)
+    bias = np.array(0.0)
+
+    # weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
+    # -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
+    # -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
+    # -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
+    # -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
+
+    opt = NesterovMomentumOptimizer(0.35)
+
+    #iteration to optimise the vqc for better results
+    for it in range(nb_iterations):
+
+        # Update the weights by one optimizer step
+        X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
+        m = np.max(X_batch_to_reduce)
+        X_batch = X_batch_to_reduce/m*np.pi/2
+        weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
+
+        # Compute predictions using np.sign for the labels to be -1 or 1
+        predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]
+
+        #Printing the cost and the accuracy of the current iteration
+        current_cost = cost(weights, bias, X, y)
+        acc = accuracy(y, predictions)
+        print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
+        #Printing the labels for visual interpretation
+        print('Actual labels: ', y)
+        print('Predicted labels: ', np.array(predictions))
+        print('-----------------------------------------------------------------------------------------')
+
+    return acc
+
 nb_datas = 50
 x = get_xlsx_file("Dry_Bean_Dataset.xlsx")
-X_to_reduce, y= get_samples(x, nb_datas, ['SIRA', 'DERMASON'])
-
-#We take the max to be pi/2 and the rest of the parameters to be less than pi/2
-m = np.max(X_to_reduce)
-X = X_to_reduce/m*np.pi/2
-
-
-#we choose a seed for the random to be comparable using different methods
-np.random.seed(0)
-
-num_qubits = 3
-
-#initialization of the bias and the weights which are random
-num_layers = 2
-# weights = np.random.randn(num_layers, num_qubits, requires_grad = True)
-weights = np.array([[-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
- -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
- -0.03777734, -0.09488475,  0.01733188,  0.05791952], [-0.15155443,  0.03289792, -0.14296978,  0.01073419, -0.02191593, -0.0019281,
- -0.14784011, -0.0409323,  -0.00325512,  0.02059717, -0.11453522,  0.06808275,
- -0.03777734, -0.09488475,  0.01733188,  0.05791952]])
-
-bias = np.array(0.0)
-
-opt = NesterovMomentumOptimizer(0.35)
-batch_size = 20
-
-
-#iteration to optimise the vqc for better results
-nb_iterations = 20
-# for it in range(nb_iterations):
-
-    # # Update the weights by one optimizer step
-    # X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
-    # m = np.max(X_batch_to_reduce)
-    # X_batch = X_batch_to_reduce/m*np.pi/2
-    # weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
-
-    # # Compute predictions using np.sign for the labels to be -1 or 1
-    # predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]
-
-    # #Printing the cost and the accuracy of the current iteration
-    # current_cost = cost(weights, bias, X, y)
-    # acc = accuracy(y, predictions)
-    # print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
-    # #Printing the labels for visual interpretation
-    # print('Actual labels: ', y)
-    # print('Predicted labels: ', np.array(predictions))
-    # print('-----------------------------------------------------------------------------------------')
-
-fig, ax = qml.draw_mpl(circuit)([[1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]], [1, 2, 3, 4, 5, 6, 7, 8])
-fig.savefig('vqc_ansatz_HTRU2')
