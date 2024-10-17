@@ -97,8 +97,9 @@ def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str = '', sa
     print('Calculating predictions...')
     predictions = svm.predict(X_test)
 
-    #printing the labels for comparison
-    print(predictions, y_test)
+    #Printing the labels for visual interpretation
+    print('Actual labels: ', y_test)
+    print('Predicted labels: ', predictions)
 
     #returning the accuracy score
     acc = accuracy_score(predictions, y_test)

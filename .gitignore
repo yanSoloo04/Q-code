@@ -2,3 +2,7 @@
 .DS_Store
 __pycache__/data.cpython-311.pyc
 __pycache__/data.cpython-313.pyc
+__pycache__/MLPC.cpython-313.pyc
+__pycache__/QCNN.cpython-313.pyc
+__pycache__/QSVM.cpython-313.pyc
+__pycache__/VQC.cpython-313.pyc

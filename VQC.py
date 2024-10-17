@@ -48,7 +48,7 @@ def circuit(weights: NDArray, x: NDArray, ansatz:str, embedding:str, rot:str = '
     """
     #amplitude embedding
     if embedding == 'amplitude':
-        nb_qubits = math.log2(len(x))
+        nb_qubits = int(math.log2(len(x)))
         qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
     
     #angle embedding
@@ -191,13 +191,12 @@ def run_VQC(dataset:NDArray, nb_datas: int, batch_size:int, labels_value: Tuple,
         predictions = [np.sign(variational_classifier(weights, bias, x, ansatz, embedding, rot)) for x in X]
 
         #Printing the cost and the accuracy of the current iteration
-        current_cost = cost(weights, bias, X, labels)
+        current_cost = cost(weights, bias, X, labels, ansatz, embedding, rot)
         acc = accuracy(labels, predictions)
         print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
-        
-        #Printing the labels for visual interpretation
-        print('Actual labels: ', labels)
-        print('Predicted labels: ', np.array(predictions))
         print('-----------------------------------------------------------------------------------------')
-
+        
+    #Printing the labels for visual interpretation
+    print('Actual labels: ', labels)
+    print('Predicted labels: ', np.array(predictions))
     return acc
