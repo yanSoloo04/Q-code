@@ -4,7 +4,6 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from data import get_csv_file, get_samples, get_xlsx_file
 
 
 def run_MLPC(parameters:NDArray, labels:NDArray, matrix:bool = False, filename:str = '')->float:
@@ -59,8 +58,3 @@ def draw_confusion_matrix(matrix: NDArray, file_name:str):
     plt.yticks([0, 1], ["Non-Pulsar", "Pulsar"])
     plt.savefig(file_name)
 
-#testing the MLPC
-x = get_xlsx_file('Dry_Bean_Dataset.xlsx')
-X, y = get_samples(x, 50, ['SIRA', 'DERMASON'])
-accuracy = run_MLPC(X, y, True, 'test') 
-print(accuracy)

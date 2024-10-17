@@ -15,7 +15,7 @@ def layer(layer_weights: NDArray):
     Args:
     layer_weights (NDArray): the weights used for the Ry for this layer of the ansatz
     """
-    nb_qubits =4
+    nb_qubits =3
     for i in range(nb_qubits):
         qml.RY(layer_weights[i], wires=i)
     for i in range(nb_qubits):
@@ -38,7 +38,7 @@ def circuit(weights: NDArray, x: NDArray):
 
     Returns: the expected value of PauliZ of the first qubit of the circuit.
     """
-    nb_qubits = 4
+    nb_qubits = 3
     qml.AmplitudeEmbedding(features = x, wires = range(nb_qubits), normalize=True)
 
     #Random layer ansatz
@@ -118,7 +118,7 @@ X = X_to_reduce/m*np.pi/2
 #we choose a seed for the random to be comparable using different methods
 np.random.seed(0)
 
-num_qubits = 4
+num_qubits = 3
 
 #initialization of the bias and the weights which are random
 num_layers = 2
@@ -137,23 +137,25 @@ batch_size = 20
 
 #iteration to optimise the vqc for better results
 nb_iterations = 20
-for it in range(nb_iterations):
+# for it in range(nb_iterations):
 
-    # Update the weights by one optimizer step
-    X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
-    m = np.max(X_batch_to_reduce)
-    X_batch = X_batch_to_reduce/m*np.pi/2
-    weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
+    # # Update the weights by one optimizer step
+    # X_batch_to_reduce, Y_batch= get_samples(x, batch_size, ['SIRA', 'DERMASON'])
+    # m = np.max(X_batch_to_reduce)
+    # X_batch = X_batch_to_reduce/m*np.pi/2
+    # weights, bias = opt.step(cost, weights, bias, X=X_batch, Y=Y_batch)
 
-    # Compute predictions using np.sign for the labels to be -1 or 1
-    predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]
+    # # Compute predictions using np.sign for the labels to be -1 or 1
+    # predictions = [np.sign(variational_classifier(weights, bias, x)) for x in X]
 
-    #Printing the cost and the accuracy of the current iteration
-    current_cost = cost(weights, bias, X, y)
-    acc = accuracy(y, predictions)
-    print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
-    #Printing the labels for visual interpretation
-    print('Actual labels: ', y)
-    print('Predicted labels: ', np.array(predictions))
-    print('-----------------------------------------------------------------------------------------')
+    # #Printing the cost and the accuracy of the current iteration
+    # current_cost = cost(weights, bias, X, y)
+    # acc = accuracy(y, predictions)
+    # print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
+    # #Printing the labels for visual interpretation
+    # print('Actual labels: ', y)
+    # print('Predicted labels: ', np.array(predictions))
+    # print('-----------------------------------------------------------------------------------------')
 
+fig, ax = qml.draw_mpl(circuit)([[1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]], [1, 2, 3, 4, 5, 6, 7, 8])
+fig.savefig('vqc_ansatz_HTRU2')
