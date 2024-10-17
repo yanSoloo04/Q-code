@@ -34,7 +34,7 @@ def kernel(x: NDArray, y: NDArray, embedding:str, rot:str = ''):
         qml.adjoint(AmplitudeEmbedding(normalize=True, features = y, wires = range(nb_qubits)))
 
     #Angle embedding
-    if embedding == 'angle':
+    elif embedding == 'angle':
         assert rot in ['X', 'Y', 'Z'], 'rot as to be either Y, X or Z for the angle embedding'
         nb_qubits = len(x)
         AngleEmbedding(features = x, wires = range(nb_qubits), rotation = rot)
