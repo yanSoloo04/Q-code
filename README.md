@@ -13,6 +13,6 @@ Le dépôt est divisé en plusieurs branches, chacune correspondant à une parti
 - **`test`** : Scripts et fichiers de tests pour vérifier l'intégrité des différentes méthodes.
 
 ## Utilisation
-Pour débuter, nous vous recommandons d'explorer les branches `kernel_method` et `vqc_method` pour voir les approches implémentées. Les détails sur chaque implémentation se trouvent dans les README correspondants.
+Pour tester les différentes méthodes proposées dans ce projet, une fonction run est définie dans chaque méthodes. Le fichier classificator.py est un bon début pour tester les méthodes avec différents paramètres. Pour comprendre le fonctionnement général de l'implémentation, un tutoriel jupyter notebook est diponible. 
 
 
