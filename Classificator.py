@@ -15,7 +15,7 @@ beans_labels = ['SIRA', 'DERMASON']
 HTRU_2_parameters, HTRU_2_labels = get_samples(HTRU_2_dataset, nb_data, [0, 1])
 Dry_Bean_parameters, Dry_Bean_labels = get_samples(Dry_Bean_Dataset, nb_data, beans_labels)
 
-embedding_method = 'amplitude'
+embedding_method = 'angle'
 rotation = 'Y'
 
 batch_size = 30
