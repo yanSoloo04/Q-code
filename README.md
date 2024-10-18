@@ -1,3 +1,4 @@
+
 # Qcode: Quantum Machine Learning
 
 Bienvenue dans le dépôt GitHub de **Qcode** ! Nous sommes une équipe passionnée par l'apprentissage quantique et explorons différentes méthodes de machine learning quantique à travers ce projet. L'objectif est de comparer les performances de techniques telles que les **méthodes à noyaux** et les **classificateurs variationnels quantiques (VQC)** sur des ensembles de données.
@@ -13,4 +14,5 @@ Le dépôt est divisé en plusieurs branches, chacune correspondant à une parti
 
 ## Utilisation
 Pour débuter, nous vous recommandons d'explorer les branches `kernel_method` et `vqc_method` pour voir les approches implémentées. Les détails sur chaque implémentation se trouvent dans les README correspondants.
+
 
