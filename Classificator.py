@@ -9,17 +9,17 @@ import numpy as np
 HTRU_2_dataset = get_csv_file('HTRU_2.csv')
 Dry_Bean_Dataset = get_xlsx_file('Dry_Bean_Dataset.xlsx')
 
-nb_data = 50
+nb_data = 60
 beans_labels = ['SIRA', 'DERMASON']
 
 HTRU_2_parameters, HTRU_2_labels = get_samples(HTRU_2_dataset, nb_data, [0, 1])
 Dry_Bean_parameters, Dry_Bean_labels = get_samples(Dry_Bean_Dataset, nb_data, beans_labels)
 
-embedding_method = 'angle'
+embedding_method = 'amplitude'
 rotation = 'Y'
 
-batch_size = 20
-ansatz = 'random'
+batch_size = 30
+ansatz = 'layer'
 
 
 results = np.zeros((2, 4))

@@ -6,6 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from data import get_samples
 import math
 from typing import Tuple
+from data import get_csv_file
 
 
 def pooling_circuit(nb_qubits: int):
@@ -54,7 +55,7 @@ def qcnn_circuit(parameters:NDArray, weights: NDArray, embedding: str, rot: str 
     ##Choosing the embedding
     if embedding == 'amplitude':
         nb_qubits_init = int(math.log2(len(parameters)))
-        qml.AmplitudeEmbedding(parameters, wires = range(nb_qubits_init), normalize=True)
+        qml.AmplitudeEmbedding(features = parameters, wires = range(nb_qubits_init), normalize=True)
 
     elif embedding == 'angle':
         assert rot in ['X', 'Y', 'Z'], 'rot must be X, Y or Z for the angle embedding'
@@ -66,12 +67,12 @@ def qcnn_circuit(parameters:NDArray, weights: NDArray, embedding: str, rot: str 
     while nb_qubits != 1:
         # one step of convolution and pooling
         convolution_circuit(weights[:nb_qubits])
-        # qml.RandomLayers(weights, wires = range(nb_qubits))
         qml.Barrier(wires = range(nb_qubits_init))
         pooling_circuit(nb_qubits)
         qml.Barrier(wires = range(nb_qubits_init))
         #If the number of qubits is odd, we use math.ceil because there's one qubit not used in the pooling phase
         nb_qubits = math.ceil(nb_qubits/2)
+
     return qml.expval(qml.PauliZ(0))
 
 def qcnn_classifier(parameters, weights, bias, embedding: str, rot: str = ''):
@@ -162,20 +163,19 @@ def run_QCNN(dataset: NDArray, nb_datas: int, batch_size: int, labels_value: Tup
 
     parameters, labels = get_samples(dataset, nb_datas, labels_value)
 
-    #scaling the parameters
     scaler = StandardScaler().fit(parameters)
     X = scaler.transform(parameters)
-
+  
     #setting a seed for the weights for comparison between different embeddings
     np.random.seed(0)
 
     nb_qubits = len(X[0])
 
     #initialization of the bias and the weights which are random
-    weights = 0.07 * np.random.randn(nb_qubits)
+    weights = 0.1 * np.random.randn(nb_qubits, requires_grad = True)
     bias = np.array(0.0)
 
-    opt = NesterovMomentumOptimizer(0.5)
+    opt = NesterovMomentumOptimizer(0.35)
 
     #iteration to optimise the qcnn for better results
     for it in range(nb_iterations):

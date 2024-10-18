@@ -14,13 +14,12 @@ from qiskit.circuit import ParameterVector
 
 
 
-def layer(layer_weights: NDArray):
+def layer(layer_weights: NDArray, nb_qubits: int):
     """
     This function creates the circuit of one layer of the ansatz for the vqc. We use CNOT to create intrication.
     Args:
     layer_weights (NDArray): the weights used for the Ry for this layer of the ansatz
     """
-    nb_qubits =3
     for i in range(nb_qubits):
         qml.RY(layer_weights[i], wires=i)
     for i in range(nb_qubits):
@@ -64,7 +63,7 @@ def circuit(weights: NDArray, x: NDArray, ansatz:str, embedding:str, rot:str = '
     #Ry and CNOT ansatz
     elif ansatz == 'layer':
         for layer_weights in weights:
-            layer(layer_weights)
+            layer(layer_weights, nb_qubits)
 
     return qml.expval(qml.PauliZ(0))
 
@@ -195,7 +194,7 @@ def run_VQC(dataset:NDArray, nb_datas: int, batch_size:int, labels_value: Tuple,
         acc = accuracy(labels, predictions)
         print(f"Iter: {it+1:4d} | Cost: {current_cost:0.7f} | Accuracy: {acc:0.7f}")
         print('-----------------------------------------------------------------------------------------')
-        
+
     #Printing the labels for visual interpretation
     print('Actual labels: ', labels)
     print('Predicted labels: ', np.array(predictions))
