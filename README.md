@@ -1,21 +1,18 @@
-# Qcode: Kernel Method
 
-Cette branche contient le code pour l'implémentation de la méthode à noyaux, une technique clé dans le machine learning quantique. Nous avons exploré plusieurs approches, notamment :
+# Qcode: Quantum Machine Learning
 
-- **QSVM (Quantum Support Vector Machine)** : Une méthode utilisant des vecteurs de support quantiques pour la classification.
-- **QCNN (Quantum Convolutional Neural Network)** : Un réseau de neurones convolutionnels quantiques, adapté à l'analyse de données structurées.
-- **MLPC (Multi-Layer Perceptron Classifier)** : Un classificateur basé sur un perceptron multicouche, utilisé pour des problèmes de classification complexes.
-**Embedding** : Techniques d'encodage des données pour les mapper dans un espace quantique. Nous avons implémenté plusieurs types d'embedding :
-  - **Angle Embedding** : Utilisation d'angles pour représenter les données.
-  - **Amplitude Embedding** : Encodage des amplitudes des états quantiques.
-  - **Basis Embedding** : Mapping des données dans la base quantique.
+Bienvenue dans le dépôt GitHub de **Qcode** ! Nous sommes une équipe passionnée par l'apprentissage quantique et explorons différentes méthodes de machine learning quantique à travers ce projet. L'objectif est de comparer les performances de techniques telles que les **méthodes à noyaux** et les **classificateurs variationnels quantiques (VQC)** sur des ensembles de données.
 
-## Objectif
-L'objectif de cette branche est d'utiliser différentes méthodes à noyaux pour améliorer la classification des données et mieux séparer les différentes classes.
+## Structure du Projet
+Le dépôt est divisé en plusieurs branches, chacune correspondant à une partie spécifique de notre travail :
 
-## Contenu
-- **`QSVM.py`** : Implémentation spécifique pour QSVM.
-- **`QCNN.py`** : Script pour QCNN.
-- **`MLPC.py`** : Script pour le classificateur MLPC.
-- **`embedding.py`** : Fonctions pour l'embedding des données, y compris l'angle embedding, l'amplitude embedding et le basis embedding.
+- **`data`** : Contient les ensembles de données utilisés pour l'entraînement et la validation.
+- **`documentation`** : Documentation détaillée du projet, y compris le rapport technique.
+- **`kernel_method`** : Implémentation de l'approche par méthode à noyaux pour la classification quantique.
+- **`vqc_method`** : Implémentation de classificateurs variationnels quantiques.
+- **`test`** : Scripts et fichiers de tests pour vérifier l'intégrité des différentes méthodes.
+
+## Utilisation
+Pour débuter, nous vous recommandons d'explorer les branches `kernel_method` et `vqc_method` pour voir les approches implémentées. Les détails sur chaque implémentation se trouvent dans les README correspondants.
+
 
