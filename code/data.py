@@ -1,3 +1,7 @@
+"""
+This file contains the utility functions that takes the dataset file into an array. 
+There's also a function that gets the labels and the parameters for two given labels and a number of data
+"""
 import pandas as pd
 import random
 from numpy.typing import NDArray
