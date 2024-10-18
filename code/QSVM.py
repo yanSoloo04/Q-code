@@ -104,3 +104,5 @@ def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str = '', sa
     #returning the accuracy score
     acc = accuracy_score(predictions, y_test)
     return acc
+
+test = get_csv_file('HTRU_2.csv')

@@ -7,12 +7,6 @@ from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 from data import get_samples
 
-##TO SEE...###
-from qiskit.circuit.library import RealAmplitudes
-from pennylane import from_qiskit
-from qiskit.circuit import ParameterVector
-
-
 
 def layer(layer_weights: NDArray, nb_qubits: int):
     """
