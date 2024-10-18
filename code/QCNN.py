@@ -1,3 +1,9 @@
+"""
+This file contains every fonctions utils to run the QCNN. 
+The run_QCNN function can be found at the end of this file.
+If you want to add a type of embedding, the precondition must be changed and 
+you must add the embedding method to the qcnn_circuit function.
+"""
 from pennylane import numpy as np
 import pennylane as qml
 from numpy.typing import NDArray
@@ -6,7 +12,6 @@ from sklearn.preprocessing import StandardScaler
 from data import get_samples
 import math
 from typing import Tuple
-from data import get_csv_file
 
 
 def pooling_circuit(nb_qubits: int):

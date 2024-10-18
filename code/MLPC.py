@@ -1,3 +1,7 @@
+"""
+This file contains the run_MLPC and draw the confusion matrix. 
+If you want different parameters, just change the call to MLPC classifier on line 31.
+"""
 from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier

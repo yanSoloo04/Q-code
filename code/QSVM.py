@@ -1,3 +1,9 @@
+"""
+This file contains every fonctions utils to run the QSVM and draw the kernel matrix. 
+The run_QSVM function can be found at the end of this file.
+If you want to add a type of embedding, the preconditions must be changed and 
+you must add the embedding method to the kernel function.
+"""
 import numpy as np
 import pennylane as qml
 from pennylane import AngleEmbedding, AmplitudeEmbedding
@@ -105,4 +111,3 @@ def run_QSVM(parameters:NDArray, labels:NDArray, embedding:str, rot:str = '', sa
     acc = accuracy_score(predictions, y_test)
     return acc
 
-test = get_csv_file('HTRU_2.csv')

@@ -1,3 +1,11 @@
+"""
+This file contains every fonctions utils to run the VQC. 
+The run_VQC function can be found at the end of this file.
+If you want to add a type of embedding, the precondition must be changed and 
+you must add the embedding method to the circuit function.
+"""
+
+
 from pennylane import numpy as np
 import pennylane as qml
 import math
